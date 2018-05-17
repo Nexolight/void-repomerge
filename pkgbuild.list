@@ -1,0 +1,5 @@
+qubes prebuild-hooks/linux-kernel.sh linux-headers
+qubes prebuild-hooks/linux-kernel.sh linux
+qubes none qubes-vm-meta
+
+
