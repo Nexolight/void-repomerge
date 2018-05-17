@@ -76,6 +76,8 @@ while read -r pkg; do
 		git branch -D "$BRANCH"
 		git checkout -b "$BRANCH" -f "custom/$BRANCH"
 		git pull
+		git merge -s ours "origin/master"
+		
 
 		if [ "$PREBUILD_HOOK" != "none" ]; then
 			stage "Executing prebuild hook: $PREBUILD_HOOK"
