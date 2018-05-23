@@ -12,6 +12,8 @@
 #	SIGNER - a.e. someone <someone@mail.com>
 #	REPO_FOLDER - The folder where the git repository is stored
 #	MAX_JOBS - How many threads are used to build
+#	KEEP_DEBUG - Keep the debug packages
+#
 #
 # pkgbuild.list
 # <branch> <(rel prebuilt hook | none)> <pkgname> <arch>
@@ -104,9 +106,13 @@ ARCHS=$(echo "$ARCHS" | sort -u)
 for HDIR in $ARCHS; do
 	if [ "$ARCH" == "x86_64" ] && [ "$HDIR" == "i686" ] ; then
 		./xbps-src -m "masterdir-x86_64" binary-bootstrap
+		./xbps-src -m "masterdir-x86_64" bootstrap-update
+
 		./xbps-src -m "masterdir-i686" binary-bootstrap i686
+		./xbps-src -m "masterdir-i686" bootstrap-update i686
 	else
 		./xbps-src -m "masterdir-$HDIR" binary-bootstrap
+		./xbps-src -m "masterdir-$HDIR" bootstrap-update
 	fi
 done
 
@@ -118,7 +124,7 @@ while read -r pkg; do
 	export BRANCH=$(echo "$pkg" | cut -f 1 -d ' ')
 	PREBUILD_HOOK=$(echo "$pkg" | cut -f 2 -d ' ')
 	export PACKAGE=$(echo "$pkg" | cut -f 3 -d ' ')
-	export B_ARCH="$(echo "$pkg" | cut -f 4 -d ' ')"
+	export B_ARCH=$(echo "$pkg" | cut -f 4 -d ' ')
 	
 	stage "Building $BRANCH > $PACKAGE"
 	git checkout -f "custom/$BRANCH"
@@ -188,6 +194,10 @@ while read -r pkg; do
 
 		./xbps-src -m "masterdir-$B_ARCH" "$CC_ARCH" clean "$PACKAGE"
 		./xbps-src -m "masterdir-$B_ARCH" -j $MAX_JOBS "$CC_ARCH" pkg "$PACKAGE" 
+
+		if [ -z "$KEEP_DEBUG" ];then
+			find ./hostdir/binpkgs/$BRANCH/*debug -type d -exec rm -rf {} \; &> /dev/null
+		fi
 		
 		SIGNDIRS="$BRANCH $BRANCH/nonfree $BRANCH/multilib $BRANCH/multilib/nonfree"
 		
