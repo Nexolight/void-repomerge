@@ -26,6 +26,7 @@
 #		U_REVISION - package revision
 #		ARCH - The host architecture
 #		B_ARCH - The architecture which is used to build the package
+#		MAX_JOBS - The amount of build jobs
 
 SFILE=`readlink -f $0`
 export SDIR=`dirname "$SFILE"`
@@ -51,7 +52,7 @@ if [ -z "$REPO_FOLDER" ];then
 fi
 
 if [ -z "$MAX_JOBS" ];then
-	MAX_JOBS=$(nproc)
+	export MAX_JOBS=$(nproc)
 fi
 
 export ARCH=$(uname -m)

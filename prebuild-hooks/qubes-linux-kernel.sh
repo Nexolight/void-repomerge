@@ -23,4 +23,4 @@ sed 's|# CONFIG_TRANSPARENT_HUGEPAGE_MADVISE is not set|CONFIG_TRANSPARENT_HUGEP
 sed 's|# CONFIG_TRANSPARENT_HUGEPAGE_MADVISE is not set|CONFIG_TRANSPARENT_HUGEPAGE_MADVISE=y|g' -i "$REPO_FOLDER/srcpkgs/$KERNEL/files/x86_64-dotconfig"
 
 ./xbps-src clean "$KERNEL"
-./xbps-src pkg -j $(nproc) "$KERNEL"
+./xbps-src pkg -j $MAX_JOBS "$KERNEL"
