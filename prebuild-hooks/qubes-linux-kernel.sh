@@ -22,5 +22,13 @@ fi
 sed 's|# CONFIG_TRANSPARENT_HUGEPAGE_MADVISE is not set|CONFIG_TRANSPARENT_HUGEPAGE_MADVISE=y|g' -i "$REPO_FOLDER/srcpkgs/$KERNEL/files/i386-dotconfig"
 sed 's|# CONFIG_TRANSPARENT_HUGEPAGE_MADVISE is not set|CONFIG_TRANSPARENT_HUGEPAGE_MADVISE=y|g' -i "$REPO_FOLDER/srcpkgs/$KERNEL/files/x86_64-dotconfig"
 
-./xbps-src clean "$KERNEL"
-./xbps-src pkg -j $MAX_JOBS "$KERNEL"
+echo ""
+echo ""
+echo "----------------------------------------------------------"
+echo " Building $KERNEL package referenced by $PACKAGE"
+echo "----------------------------------------------------------"
+echo ""
+echo ""
+
+./xbps-src clean -m "masterdir-$B_ARCH" "$KERNEL"
+./xbps-src pkg -m "masterdir-$B_ARCH" -j "$MAX_JOBS" "$KERNEL"

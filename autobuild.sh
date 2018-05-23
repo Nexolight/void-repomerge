@@ -9,7 +9,7 @@
 #	UPSTREAM_REPO - The upstream git repository
 #	CUSTOM_REPO - Yout own custom repository
 #	PRIVATEKEY - Your private key location to sign the packages
-#	SIGNER - a.e. 'someone <someone@mail.com>'
+#	SIGNER - a.e. someone <someone@mail.com>
 #	REPO_FOLDER - The folder where the git repository is stored
 #	MAX_JOBS - How many threads are used to build
 #
@@ -44,7 +44,7 @@ if [ -z "$PRIVATEKEY" ];then
 fi
 
 if [ -z "$SIGNER" ];then
-	SIGNER="'nexolight <snow.dream.ch@gmail.com>'"
+	SIGNER="nexolight <snow.dream.ch@gmail.com>"
 fi
 
 if [ -z "$REPO_FOLDER" ];then
