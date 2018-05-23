@@ -87,7 +87,7 @@ fi
 
 stage "Updating repository"
 git fetch --all
-git checkout origin/master
+git checkout -f origin/master
 
 ARCHS=""
 NL=$'\n'
