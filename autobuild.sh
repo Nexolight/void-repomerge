@@ -82,14 +82,14 @@ mkdir -p "$REPO_FOLDER"
 cd "$REPO_FOLDER"
 
 if [ ! -d "$REPO_FOLDER/.git" ]; then
-	stage "Cloning repository"
-	git clone "$UPSTREAM_REPO" "$REPO_FOLDER"
-	git remote add custom "$CUSTOM_REPO"
+	stage "Cloning repository..."
+	git clone "$UPSTREAM_REPO" "$REPO_FOLDER" &> /dev/null
+	git remote add custom "$CUSTOM_REPO" &> /dev/null
 fi
 
-stage "Updating repository"
-git fetch --all
-git checkout -f origin/master
+stage "Updating repository..."
+git fetch --all  &> /dev/null
+git checkout -f origin/master  &> /dev/null
 
 ARCHS=""
 NL=$'\n'
@@ -117,17 +117,29 @@ for HDIR in $ARCHS; do
 done
 
 while read -r pkg; do
-	if [ -z "$pkg" ]; then
+	if ! echo "$pkg" | grep -E '^[^#].+\s.+\s.+\s.+' &> /dev/null; then
+		warn "Skipping: \"$pkg\" - invalid syntax"
 		continue
+	else
+		stage "Syntax ok: $pkg"
 	fi
 
 	export BRANCH=$(echo "$pkg" | cut -f 1 -d ' ')
 	PREBUILD_HOOK=$(echo "$pkg" | cut -f 2 -d ' ')
-	export PACKAGE=$(echo "$pkg" | cut -f 3 -d ' ')
+	PACKAGE=$(echo "$pkg" | cut -f 3 -d ' ')
 	export B_ARCH=$(echo "$pkg" | cut -f 4 -d ' ')
-	
-	stage "Building $BRANCH > $PACKAGE"
-	git checkout -f "custom/$BRANCH"
+
+	if [[ "$PACKAGE" == *"_LATEST_"* ]];then
+		stage "Looking for latest package version..."
+		PKG_SEARCH_CUT=$(echo "$PACKAGE" | sed 's|_LATEST_|@|g')
+		PKG_SEARCH_D1=$(echo "$PKG_SEARCH_CUT" | cut -f 1 -d '@')
+		PKG_SEARCH_D2=$(echo "$PKG_SEARCH_CUT" | cut -f 2 -d '@')
+		PACKAGE=$(find ./srcpkgs -maxdepth 1 | grep -E "${PKG_SEARCH_D1}[0-9]+\.[0-9]+${PKG_SEARCH_D2}\$" | sed 's|^.*/||g' | sort -V | tail -n1)
+	fi
+	export PACKAGE=$PACKAGE
+
+	stage "Working on $BRANCH > $PACKAGE..."
+	git checkout -f "custom/$BRANCH"  &> /dev/null
 	
 	export U_VERSION=$( grep -oE 'version=[0-9.]+' "./srcpkgs/$PACKAGE/template" | cut -f 2 -d '=')
 	export U_REVISION=$( grep -oE 'revision=[0-9]+' "./srcpkgs/$PACKAGE/template" | cut -f 2 -d '=')	
@@ -171,11 +183,11 @@ while read -r pkg; do
 	fi 
 	
 	if [ "$NEEDS_BUILD" == 1 ]; then
-		stage "$PACKAGE got an update > Rebuilding it"
-
-		git branch -D "$BRANCH"
-		git checkout -b "$BRANCH" -f custom/"$BRANCH"
-		git merge -X ours --no-commit --no-ff origin/master		
+		stage "$PACKAGE got an update"
+		stage "Merging for build..."
+		git branch -D "$BRANCH" &> /dev/null
+		git checkout -b "$BRANCH" -f custom/"$BRANCH" &> /dev/null
+		git merge -X ours --no-commit --no-ff origin/master &> /dev/null	
 
 		if [ "$PREBUILD_HOOK" != "none" ]; then
 			stage "Executing prebuild hook: $PREBUILD_HOOK"
@@ -192,6 +204,7 @@ while read -r pkg; do
 			CC_ARCH="-a $B_ARCH"
 		fi 
 
+		stage "Building now..."
 		./xbps-src -m "masterdir-$B_ARCH" "$CC_ARCH" clean "$PACKAGE"
 		./xbps-src -m "masterdir-$B_ARCH" -j $MAX_JOBS "$CC_ARCH" pkg "$PACKAGE" 
 
@@ -201,11 +214,12 @@ while read -r pkg; do
 		
 		SIGNDIRS="$BRANCH $BRANCH/nonfree $BRANCH/multilib $BRANCH/multilib/nonfree"
 		
+		stage "Updating signatures..."
 		for SIGNDIR in $SIGNDIRS; do
 			BINDIR="./hostdir/binpkgs/$SIGNDIR"
-			xbps-rindex -a -f "$BINDIR"/*.xbps
-			xbps-rindex --sign --signedby "$SIGNER" --privkey "$PRIVATEKEY" "$BINDIR"
-			xbps-rindex --sign-pkg --signedby "$SIGNER" --privkey "$PRIVATEKEY" "$BINDIR"/*.xbps
+			xbps-rindex -a "$BINDIR"/*.xbps  &> /dev/null
+			xbps-rindex --sign --signedby "$SIGNER" --privkey "$PRIVATEKEY" "$BINDIR" &> /dev/null
+			xbps-rindex --sign-pkg --signedby "$SIGNER" --privkey "$PRIVATEKEY" "$BINDIR"/*.xbps  &> /dev/null
 		done
 	fi
 done < "$SDIR/pkgbuild.list"
