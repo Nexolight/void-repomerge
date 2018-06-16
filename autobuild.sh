@@ -34,7 +34,7 @@ SFILE=`readlink -f $0`
 export SDIR=`dirname "$SFILE"`
 
 if [ -z "$UPSTREAM_REPO" ];then
-	UPSTREAM_REPO="https://github.com/voidlinux/void-packages.git"
+	UPSTREAM_REPO="https://github.com/void-linux/void-packages"
 fi
 
 if [ -z "$CUSTOM_REPO" ];then
