@@ -80,6 +80,9 @@ echo $$ > "$SDIR/autobuild.lock"
 
 mkdir -p "$REPO_FOLDER"
 cd "$REPO_FOLDER"
+git config --local user.name "dummy"
+git config --local user.email "dummy@dummy.com"
+
 
 if [ ! -d "$REPO_FOLDER/.git" ]; then
 	stage "Cloning repository..."
