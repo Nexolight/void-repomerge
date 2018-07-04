@@ -124,14 +124,20 @@ while read -r pkg; do
 		warn "Skipping: \"$pkg\" - invalid syntax"
 		continue
 	else
-		stage "Syntax ok: $pkg"
+		info "Syntax ok: $pkg"
 	fi
-
+	
 	export BRANCH=$(echo "$pkg" | cut -f 1 -d ' ')
 	PREBUILD_HOOK=$(echo "$pkg" | cut -f 2 -d ' ')
 	PACKAGE=$(echo "$pkg" | cut -f 3 -d ' ')
 	export B_ARCH=$(echo "$pkg" | cut -f 4 -d ' ')
 
+
+	stage "Merging branches..."
+	git branch -D "$BRANCH" &> /dev/null
+	git checkout -b "$BRANCH" -f custom/"$BRANCH" &> /dev/null
+	git merge -X ours --no-commit --no-ff origin/master &> /dev/null	
+	
 	if [[ "$PACKAGE" == *"_LATEST_"* ]];then
 		stage "Looking for latest package version..."
 		PKG_SEARCH_CUT=$(echo "$PACKAGE" | sed 's|_LATEST_|@|g')
@@ -140,9 +146,6 @@ while read -r pkg; do
 		PACKAGE=$(find ./srcpkgs -maxdepth 1 | grep -E "${PKG_SEARCH_D1}[0-9]+\.[0-9]+${PKG_SEARCH_D2}\$" | sed 's|^.*/||g' | sort -V | tail -n1)
 	fi
 	export PACKAGE=$PACKAGE
-
-	stage "Working on $BRANCH > $PACKAGE..."
-	git checkout -f "custom/$BRANCH"  &> /dev/null
 	
 	export U_VERSION=$( grep -oE 'version=[0-9.]+' "./srcpkgs/$PACKAGE/template" | cut -f 2 -d '=')
 	export U_REVISION=$( grep -oE 'revision=[0-9]+' "./srcpkgs/$PACKAGE/template" | cut -f 2 -d '=')	
@@ -187,11 +190,7 @@ while read -r pkg; do
 	
 	if [ "$NEEDS_BUILD" == 1 ]; then
 		stage "$PACKAGE got an update"
-		stage "Merging for build..."
-		git branch -D "$BRANCH" &> /dev/null
-		git checkout -b "$BRANCH" -f custom/"$BRANCH" &> /dev/null
-		git merge -X ours --no-commit --no-ff origin/master &> /dev/null	
-
+		
 		if [ "$PREBUILD_HOOK" != "none" ]; then
 			stage "Executing prebuild hook: $PREBUILD_HOOK"
 			if [ -f "$SDIR/$PREBUILD_HOOK" ]; then
