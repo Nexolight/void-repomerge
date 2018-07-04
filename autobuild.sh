@@ -107,19 +107,17 @@ done < "$SDIR/pkgbuild.list"
 ARCHS=$(echo "$ARCHS" | sort -u)
 
 for HDIR in $ARCHS; do
-	for RUN in {1..2};do
-		info "Update stage $RUN for $HDIR"
-		if [ "$ARCH" == "x86_64" ] && [ "$HDIR" == "i686" ] ; then
-			./xbps-src -m "masterdir-x86_64" binary-bootstrap
-			./xbps-src -m "masterdir-x86_64" bootstrap-update
+	info "Update stage $RUN for $HDIR"
+	if [ "$ARCH" == "x86_64" ] && [ "$HDIR" == "i686" ] ; then
+		./xbps-src -m "masterdir-x86_64" binary-bootstrap
+		./xbps-src -m "masterdir-x86_64" bootstrap-update
 
-			./xbps-src -m "masterdir-i686" binary-bootstrap i686
-			./xbps-src -m "masterdir-i686" bootstrap-update i686
-		else
-			./xbps-src -m "masterdir-$HDIR" binary-bootstrap
-			./xbps-src -m "masterdir-$HDIR" bootstrap-update
-		fi
-	done
+		./xbps-src -m "masterdir-i686" binary-bootstrap i686
+		./xbps-src -m "masterdir-i686" bootstrap-update i686
+	else
+		./xbps-src -m "masterdir-$HDIR" binary-bootstrap
+		./xbps-src -m "masterdir-$HDIR" bootstrap-update
+	fi
 done
 
 while read -r pkg; do
