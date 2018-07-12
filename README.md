@@ -25,6 +25,7 @@ KEEP_DEBUG - Keep the debug packages
 This is a list with packages to build:
 
 **Syntax:** `<branch> <(rel prebuilt hook | none)> <pkgname> <arch>`
+
 **Example:** `qubes ./prebuild-hooks/qubes-linux-kernel.sh qubes-vm-meta x86_64`
 
 
