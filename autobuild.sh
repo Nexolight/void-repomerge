@@ -151,6 +151,11 @@ while read -r pkg; do
 	export U_VERSION=$( grep -oE 'version=[0-9.]+' "./srcpkgs/$PACKAGE/template" | cut -f 2 -d '=')
 	export U_REVISION=$( grep -oE 'revision=[0-9]+' "./srcpkgs/$PACKAGE/template" | cut -f 2 -d '=')	
 
+	if [ -z "$U_VERSION" ] || [ -z "$U_REVISION" ];then
+		warn "Skipping due to unreadable version number"
+		continue
+	fi
+
 	BASEPKG_PATH="./hostdir/binpkgs/$BRANCH"
 	PKG_LIB=""
 	PKG_ARCH=""
