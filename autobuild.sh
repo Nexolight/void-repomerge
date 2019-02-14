@@ -106,17 +106,18 @@ done < "$SDIR/pkgbuild.list"
 
 ARCHS=$(echo "$ARCHS" | sort -u)
 
+rm -rf masterdir*
 for HDIR in $ARCHS; do
 	info "Update stage $RUN for $HDIR"
 	if [ "$ARCH" == "x86_64" ] && [ "$HDIR" == "i686" ] ; then
 		./xbps-src -m "masterdir-x86_64" binary-bootstrap
-		./xbps-src -m "masterdir-x86_64" bootstrap-update
+		#./xbps-src -m "masterdir-x86_64" bootstrap-update
 
 		./xbps-src -m "masterdir-i686" binary-bootstrap i686
-		./xbps-src -m "masterdir-i686" bootstrap-update i686
+		#./xbps-src -m "masterdir-i686" bootstrap-update i686
 	else
 		./xbps-src -m "masterdir-$HDIR" binary-bootstrap
-		./xbps-src -m "masterdir-$HDIR" bootstrap-update
+		#./xbps-src -m "masterdir-$HDIR" bootstrap-update
 	fi
 done
 
@@ -137,7 +138,7 @@ while read -r pkg; do
 	stage "Merging branches..."
 	git branch -D "$BRANCH" &> /dev/null
 	git checkout -b "$BRANCH" -f custom/"$BRANCH" &> /dev/null
-	git merge -X ours --no-commit --no-ff origin/master &> /dev/null	
+	git merge -X ours --no-ff origin/master &> /dev/null	
 	
 	if [[ "$PACKAGE" == *"_LATEST_"* ]];then
 		stage "Looking for latest package version..."
